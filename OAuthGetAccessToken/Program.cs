@@ -11,8 +11,8 @@ namespace OAuthGetAccessToken
     class Program
     {
         // 公開しないようにする
-        const string ConsumerKey = "OKWyYVPvnpcBfbdmrJaNWx";
-        const string ConsumerSecret = "wObshonqbOqrnhIXGwflmlEVUFiiEJqScYLmKbPYTe";
+        const string ConsumerKey = "";
+        const string ConsumerSecret = "";
 
 
         // アクセストークン

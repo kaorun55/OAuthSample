@@ -11,10 +11,8 @@ namespace OAuthSample
     class Program
     {
         // 公開しないようにする
-        const string ConsumerKey = "OKWyYVPvnpcBfbdmrJaNWx";
-        const string ConsumerSecret = "wObshonqbOqrnhIXGwflmlEVUFiiEJqScYLmKbPYTe";
-
-        const string RequestServer = "https://cacoo.com/api";
+        const string ConsumerKey = "";
+        const string ConsumerSecret = "";
 
         // アクセストークン
         const string AccessToken = "https://cacoo.com/oauth/access_token";
@@ -33,10 +31,6 @@ namespace OAuthSample
                 string token = "";
                 string tokenSecret = "";
                 string PIN = "";
-
-                token = "d14c062a4b597b03f2555f77f1d894c0";
-                tokenSecret = "ddaa5235c48165a57941fec0a88f89c9";
-                PIN = "8503307";
 
                 Uri uri = new Uri(Diagrams);
                 string normalizedUrl, normalizedRequestParameters;
