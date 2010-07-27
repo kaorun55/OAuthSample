@@ -110,13 +110,12 @@ namespace TwitterOAuthGetAccessToken
             webreq.Method = "GET";
             HttpWebResponse webres = (HttpWebResponse)webreq.GetResponse();
 
-            System.IO.Stream st = webres.GetResponseStream();
-            System.IO.StreamReader sr = new System.IO.StreamReader( st, Encoding.GetEncoding( 932 ) );
+            string result;
+            using ( System.IO.Stream st = webres.GetResponseStream() )
+            using ( System.IO.StreamReader sr = new System.IO.StreamReader( st, Encoding.GetEncoding( 932 ) ) ) {
+                result = sr.ReadToEnd();
+            }
 
-            string result = sr.ReadToEnd();
-
-            sr.Close();
-            st.Close();
             Console.WriteLine( result );
 
             //正規表現でoauth_token,oauth_token_secret取得
@@ -140,13 +139,10 @@ namespace TwitterOAuthGetAccessToken
             webreq.Method = "POST";
             webres = (System.Net.HttpWebResponse)webreq.GetResponse();
 
-            st = webres.GetResponseStream();
-            sr = new System.IO.StreamReader( st, Encoding.GetEncoding( 932 ) );
-
-            result = sr.ReadToEnd();
-
-            sr.Close();
-            st.Close();
+            using ( System.IO.Stream st = webres.GetResponseStream() )
+            using ( System.IO.StreamReader sr = new System.IO.StreamReader( st, Encoding.GetEncoding( 932 ) ) ) {
+                result = sr.ReadToEnd();
+            }
 
             Console.WriteLine( result );
 
