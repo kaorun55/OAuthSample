@@ -147,6 +147,14 @@ namespace TwitterOAuthGetAccessToken
 
             Console.WriteLine( result );
 
+            //正規表現でoauth_token,oauth_token_secret取得
+            match = Regex.Match( result, @"oauth_token=(.*?)&oauth_token_secret=(.*?)&.*" );
+            token = match.Groups[1].Value;
+            tokenSecret = match.Groups[2].Value;
+
+            Console.WriteLine( "public const string token = \"" + token + "\";" );
+            Console.WriteLine( "public const string tokenSecret = \"" + tokenSecret + "\";" );
+
             //デスクトップ\oauth_token.txtに保存
             File.WriteAllText( Environment.GetFolderPath( Environment.SpecialFolder.Desktop ) + @"\oauth_token.txt", result );
         }
