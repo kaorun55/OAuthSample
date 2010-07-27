@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OAuth", "OAuth\OAuth.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacooOAuthGetAccessToken", "OAuthGetAccessToken\CacooOAuthGetAccessToken.csproj", "{B056B1C4-25BD-403A-A26B-DF187068F680}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitterOAuthGetAccessToken", "TwitterOAuthGetAccessToken\TwitterOAuthGetAccessToken.csproj", "{8CFFF926-AC61-4979-8984-39844B9571CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{B056B1C4-25BD-403A-A26B-DF187068F680}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B056B1C4-25BD-403A-A26B-DF187068F680}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B056B1C4-25BD-403A-A26B-DF187068F680}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CFFF926-AC61-4979-8984-39844B9571CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CFFF926-AC61-4979-8984-39844B9571CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CFFF926-AC61-4979-8984-39844B9571CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CFFF926-AC61-4979-8984-39844B9571CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

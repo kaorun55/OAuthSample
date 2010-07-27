@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>382ab618-987b-4635-8c6c-4ba08231d42d</ProjectGuid>
+    <ProjectGuid>{8CFFF926-AC61-4979-8984-39844B9571CB}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TwitterOAuthGetAccessToken</RootNamespace>
@@ -45,8 +45,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\APIKey\TwitterApiKey.cs">
+      <Link>TwitterApiKey.cs</Link>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OAuth\OAuth.csproj">
+      <Project>{69BA1A80-B616-494E-8213-2C94C7710F5C}</Project>
+      <Name>OAuth</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
