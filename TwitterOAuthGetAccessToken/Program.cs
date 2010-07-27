@@ -94,10 +94,10 @@ namespace TwitterOAuthGetAccessToken
         {
             System.Net.ServicePointManager.Expect100Continue = false;
             OAuthBase oAuth = new OAuthBase();
-            string nonce = GenerateNonce();
+            string nonce = oAuth.GenerateNonce();
 
             System.Uri uri = new Uri( "http://twitter.com/oauth/request_token" );
-            string timestamp = GenerateTimestamp();
+            string timestamp = oAuth.GenerateTimeStamp();
 
 
             //OAuthBace.csを用いてsignature生成
@@ -132,7 +132,7 @@ namespace TwitterOAuthGetAccessToken
 
 
             //oauth_token,oauth_token_secretを用いて再びsignature生成
-            signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST", GenerateTimestamp(), GenerateNonce(), OAuthBase.SignatureTypes.HMACSHA1, out normalizedUrl, out normalizedRequestParameters, out s );
+            signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST", oAuth.GenerateTimeStamp(), oAuth.GenerateNonce(), OAuthBase.SignatureTypes.HMACSHA1, out normalizedUrl, out normalizedRequestParameters, out s );
             webreq = (System.Net.HttpWebRequest)WebRequest.Create( string.Format( "http://twitter.com/oauth/access_token?{3}&oauth_signature={0}&oauth_verifier={2}", signature, result, PIN, normalizedRequestParameters ) );
 
 
@@ -152,22 +152,6 @@ namespace TwitterOAuthGetAccessToken
 
             //デスクトップ\oauth_token.txtに保存
             File.WriteAllText( Environment.GetFolderPath( Environment.SpecialFolder.Desktop ) + @"\oauth_token.txt", result );
-        }
-
-        private static string GenerateNonce()
-        {
-            string letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            StringBuilder result = new StringBuilder( 8 );
-            Random random = new Random();
-            for ( int i = 0; i < 8; ++i )
-                result.Append( letters[random.Next( letters.Length )] );
-            return result.ToString();
-        }
-
-        private static string GenerateTimestamp()
-        {
-            TimeSpan ts = DateTime.UtcNow - new DateTime( 1970, 1, 1, 0, 0, 0, 0 );
-            return Convert.ToInt64( ts.TotalSeconds ).ToString();
         }
     }
 }
