@@ -96,7 +96,7 @@ namespace TwitterOAuthGetAccessToken
             OAuthBase oAuth = new OAuthBase();
             string nonce = oAuth.GenerateNonce();
 
-            System.Uri uri = new Uri( "http://twitter.com/oauth/request_token" );
+            System.Uri uri = new Uri( OAuth.APIKey.ReqestToken );
             string timestamp = oAuth.GenerateTimeStamp();
 
 
@@ -106,7 +106,7 @@ namespace TwitterOAuthGetAccessToken
 
 
             //oauth_token,oauth_token_secret取得
-            HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( string.Format( "http://twitter.com/oauth/request_token?{0}&oauth_signature={1}", normalizedRequestParameters, signature ) );
+            HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( OAuth.APIKey.ReqestToken + string.Format( "?{0}&oauth_signature={1}", normalizedRequestParameters, signature ) );
             webreq.Method = "GET";
             HttpWebResponse webres = (HttpWebResponse)webreq.GetResponse();
 
@@ -125,7 +125,7 @@ namespace TwitterOAuthGetAccessToken
 
 
             //ブラウザからPIN確認
-            string AuthorizeURL = (string.Format( "http://twitter.com/oauth/authorize?{0}", result ));
+            string AuthorizeURL = OAuth.APIKey.Authorize + "?" + result;
             System.Diagnostics.Process.Start( AuthorizeURL );
             Console.Write( "PIN:" );
             string PIN = Console.ReadLine();
@@ -133,7 +133,7 @@ namespace TwitterOAuthGetAccessToken
 
             //oauth_token,oauth_token_secretを用いて再びsignature生成
             signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST", oAuth.GenerateTimeStamp(), oAuth.GenerateNonce(), OAuthBase.SignatureTypes.HMACSHA1, out normalizedUrl, out normalizedRequestParameters, out s );
-            webreq = (System.Net.HttpWebRequest)WebRequest.Create( string.Format( "http://twitter.com/oauth/access_token?{3}&oauth_signature={0}&oauth_verifier={2}", signature, result, PIN, normalizedRequestParameters ) );
+            webreq = (System.Net.HttpWebRequest)WebRequest.Create( OAuth.APIKey.AccessToken + string.Format( "?{3}&oauth_signature={0}&oauth_verifier={2}", signature, result, PIN, normalizedRequestParameters ) );
 
 
             //oauth_token,oauth_token_secretの取得
