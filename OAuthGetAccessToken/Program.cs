@@ -10,13 +10,6 @@ namespace OAuthGetAccessToken
 {
     class Program
     {
-        // アクセストークン
-        const string AccessToken = "https://cacoo.com/oauth/access_token";
-        const string Authorize = "https://cacoo.com/oauth/authorize";
-        const string ReqestToken = "https://cacoo.com/oauth/request_token";
-
-        const string Diagrams = "https://cacoo.com/api/v1/diagrams.json";
-
         static void Main( string[] args )
         {
             try {
@@ -24,7 +17,7 @@ namespace OAuthGetAccessToken
                 OAuth.OAuthBase oauth = new OAuth.OAuthBase();
                 string nonce = oauth.GenerateNonce();
 
-                System.Uri uri = new Uri( ReqestToken );
+                System.Uri uri = new Uri( OAuth.APIKey.ReqestToken );
                 string timestamp = oauth.GenerateTimeStamp();
 
                 string normalizedUrl, normalizedRequestParameters, authorationRequestParameters;
@@ -32,7 +25,7 @@ namespace OAuthGetAccessToken
                             nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1, out normalizedUrl, out normalizedRequestParameters, out authorationRequestParameters );
 
                 //oauth_token,oauth_token_secret取得
-                string request = ReqestToken + string.Format( "?{0}&oauth_signature={1}", normalizedRequestParameters, signature );
+                string request = OAuth.APIKey.ReqestToken + string.Format( "?{0}&oauth_signature={1}", normalizedRequestParameters, signature );
                 HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( request );
 
                 webreq.Method = "GET";
@@ -50,7 +43,7 @@ namespace OAuthGetAccessToken
 
 
                 //ブラウザからPIN確認
-                string AuthorizeURL = Authorize + "?oauth_token=" + token;
+                string AuthorizeURL = OAuth.APIKey.Authorize + "?oauth_token=" + token;
                 Process.Start( AuthorizeURL );
                 Console.Write( "PIN:" );
                 string PIN = Console.ReadLine();

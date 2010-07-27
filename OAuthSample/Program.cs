@@ -40,13 +40,14 @@ namespace OAuthSample
                 string requesetUrl = Diagrams + "?" + requeset;
                 HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( Diagrams );
                 webreq.Method = "POST";
+                webreq.ContentType = "application/x-www-form-urlencoded";
+                webreq.Headers.Add( "Authorization", "OAuth " + authorationRequestParameters );
 
-                byte[] byteArray = Encoding.UTF8.GetBytes( requeset );
-                Stream dataStream = webreq.GetRequestStream();
-                dataStream.Write( byteArray, 0, byteArray.Length );
-                dataStream.Close();
+//                byte[] byteArray = Encoding.UTF8.GetBytes( requesetUrl );
+//                Stream dataStream = webreq.GetRequestStream();
+//                dataStream.Write( byteArray, 0, byteArray.Length );
+//                dataStream.Close();
     
-                //webreq.Headers.Add( "Authorization: OAuth " + authorationRequestParameters );
                 HttpWebResponse webres = (System.Net.HttpWebResponse)webreq.GetResponse();
 
                 string result;
