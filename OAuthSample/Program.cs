@@ -10,10 +10,6 @@ namespace OAuthSample
 {
     class Program
     {
-        // 公開しないようにする
-        const string ConsumerKey = "";
-        const string ConsumerSecret = "";
-
         // アクセストークン
         const string AccessToken = "https://cacoo.com/oauth/access_token";
         const string Authorize = "https://cacoo.com/oauth/authorize";
@@ -21,49 +17,43 @@ namespace OAuthSample
 
         const string Diagrams = "https://cacoo.com/api/v1/users/kaorun55.xml";
 
-        static void Main(string[] args)
+        static void Main( string[] args )
         {
-            try
-            {
+            try {
                 System.Net.ServicePointManager.Expect100Continue = false;
                 OAuth.OAuthBase oauth = new OAuth.OAuthBase();
 
-                string token = "";
-                string tokenSecret = "";
-                string PIN = "";
-
-                Uri uri = new Uri(Diagrams);
+                Uri uri = new Uri( Diagrams );
                 string normalizedUrl, normalizedRequestParameters;
-                string signature = oauth.GenerateSignature(uri, ConsumerKey, ConsumerSecret, token, tokenSecret,
+                string signature = oauth.GenerateSignature( uri, OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret,
+                    OAuth.APIKey.Token, OAuth.APIKey.TokenSecret,
                     "POST", oauth.GenerateTimeStamp(), oauth.GenerateNonce(), OAuth.OAuthBase.SignatureTypes.HMACSHA1,
-                    out normalizedUrl, out normalizedRequestParameters);
+                    out normalizedUrl, out normalizedRequestParameters );
 
-                string requeset = string.Format("{2}&oauth_signature={0}&oauth_verifier={1}", signature, PIN, normalizedRequestParameters);
+                string requeset = string.Format( "{2}&oauth_signature={0}&oauth_verifier={1}", signature, OAuth.APIKey.PIN, normalizedRequestParameters );
                 string requesetUrl = Diagrams + "?" + requeset;
-                Process.Start(requesetUrl);
-                Console.WriteLine(requeset);
-                HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create(requesetUrl);
-                webreq.Headers.Set("Authorization", "OAuth " + requeset);
+                Process.Start( requesetUrl );
+                Console.WriteLine( requeset );
+                HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( requesetUrl );
+                webreq.Headers.Set( "Authorization", "OAuth " + requeset );
 
                 //oauth_token,oauth_token_secretの取得
                 webreq.Method = "POST";
                 HttpWebResponse webres = (System.Net.HttpWebResponse)webreq.GetResponse();
 
                 string result;
-                using (System.IO.Stream st = webres.GetResponseStream())
-                using (System.IO.StreamReader sr = new System.IO.StreamReader(st, Encoding.GetEncoding(932)))
-                {
+                using ( System.IO.Stream st = webres.GetResponseStream() )
+                using ( System.IO.StreamReader sr = new System.IO.StreamReader( st, Encoding.GetEncoding( 932 ) ) ) {
                     result = sr.ReadToEnd();
                 }
 
-                Console.WriteLine(result);
+                Console.WriteLine( result );
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+            catch ( Exception ex ) {
+                Console.WriteLine( ex.Message );
             }
 
-            Console.Write("Press enter : ");
+            Console.Write( "Press enter : " );
             Console.ReadLine();
         }
     }
