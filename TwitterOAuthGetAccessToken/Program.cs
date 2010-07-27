@@ -119,8 +119,9 @@ namespace TwitterOAuthGetAccessToken
             Console.WriteLine( result );
 
             //正規表現でoauth_token,oauth_token_secret取得
-            string token = Regex.Match( result, @"oauth_token=(.*?)&oauth_token_secret=.*?&oauth_callback.*" ).Groups[1].Value;
-            string tokenSecret = Regex.Match( result, @"oauth_token=(.*?)&oauth_token_secret=(.*?)&oauth_callback.*" ).Groups[2].Value;
+            Match match = Regex.Match( result, @"oauth_token=(.*?)&oauth_token_secret=(.*?)&oauth_callback.*" );
+            string token = match.Groups[1].Value;
+            string tokenSecret = match.Groups[2].Value;
 
 
             //ブラウザからPIN確認
