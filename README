@@ -1,14 +1,14 @@
 README
 =============
 
-�F�؃f�[�^�ɂ���
+認証データについて
 -------
-OAuthSample\APIKey �ȉ��� CacooApiKey.cs �Ƃ����t�@�C�������L�̗v�̂ō���Ă�������
+OAuthSample\APIKey 以下に CacooApiKey.cs というファイルを下記の要領で作ってください
     namespace OAuth
     {
         public class APIKey
         {
-            // ���J���Ȃ��悤�ɂ���
+            // 公開しないようにする
             public const string ConsumerKey = "************";
             public const string ConsumerSecret = "************************************";
 
