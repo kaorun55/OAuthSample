@@ -201,7 +201,7 @@ namespace OAuth
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <param name="signatureType">The signature type. To use the default values use <see cref="OAuthBase.SignatureTypes">OAuthBase.SignatureTypes</see>.</param>
         /// <returns>The signature base</returns>
-        public string GenerateSignatureBase( Uri url, string consumerKey, string token, string tokenSecret, string httpMethod, string timeStamp, string nonce, string signatureType, out string normalizedUrl, out string normalizedRequestParameters )
+        public string GenerateSignatureBase( Uri url, string consumerKey, string token, string tokenSecret, string httpMethod, string timeStamp, string nonce, string signatureType, out string normalizedUrl, out string normalizedRequestParameters, out string authorationRequestParameters )
         {
             if ( token == null ) {
                 token = string.Empty;
@@ -225,6 +225,7 @@ namespace OAuth
 
             normalizedUrl = null;
             normalizedRequestParameters = null;
+            authorationRequestParameters = null;
 
             List<QueryParameter> parameters = GetQueryParameters( url.Query );
             parameters.Add( new QueryParameter( OAuthVersionKey, OAuthVersion ) );
@@ -245,6 +246,7 @@ namespace OAuth
             }
             normalizedUrl += url.AbsolutePath;
             normalizedRequestParameters = NormalizeRequestParameters( parameters );
+            authorationRequestParameters = AuthorationRequestParameters( parameters );
 
             StringBuilder signatureBase = new StringBuilder();
             signatureBase.AppendFormat( "{0}&", httpMethod.ToUpper() );
@@ -252,6 +254,18 @@ namespace OAuth
             signatureBase.AppendFormat( "{0}", UrlEncode( normalizedRequestParameters ) );
 
             return signatureBase.ToString();
+        }
+
+        private string AuthorationRequestParameters( List<QueryParameter> parameters )
+        {
+            StringBuilder sb = new StringBuilder();
+            QueryParameter p = null;
+            for ( int i = 0; i < parameters.Count; i++ ) {
+                p = parameters[i];
+                sb.AppendFormat( "{0}=\"{1}\", ", p.Name, p.Value );
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>
@@ -275,9 +289,9 @@ namespace OAuth
         /// <param name="tokenSecret">The token secret, if available. If not available pass null or an empty string</param>
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <returns>A base64 string of the hash value</returns>
-        public string GenerateSignature( Uri url, string consumerKey, string consumerSecret, string token, string tokenSecret, string httpMethod, string timeStamp, string nonce, out string normalizedUrl, out string normalizedRequestParameters )
+        public string GenerateSignature( Uri url, string consumerKey, string consumerSecret, string token, string tokenSecret, string httpMethod, string timeStamp, string nonce, out string normalizedUrl, out string normalizedRequestParameters, out string authorationRequestParameters )
         {
-            return GenerateSignature( url, consumerKey, consumerSecret, token, tokenSecret, httpMethod, timeStamp, nonce, SignatureTypes.HMACSHA1, out normalizedUrl, out normalizedRequestParameters );
+            return GenerateSignature( url, consumerKey, consumerSecret, token, tokenSecret, httpMethod, timeStamp, nonce, SignatureTypes.HMACSHA1, out normalizedUrl, out normalizedRequestParameters, out authorationRequestParameters );
         }
 
         /// <summary>
@@ -291,21 +305,24 @@ namespace OAuth
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <param name="signatureType">The type of signature to use</param>
         /// <returns>A base64 string of the hash value</returns>
-        public string GenerateSignature( Uri url, string consumerKey, string consumerSecret, string token, string tokenSecret, string httpMethod, string timeStamp, string nonce, SignatureTypes signatureType, out string normalizedUrl, out string normalizedRequestParameters )
+        public string GenerateSignature( Uri url, string consumerKey, string consumerSecret, string token, string tokenSecret, string httpMethod, string timeStamp, string nonce, SignatureTypes signatureType, out string normalizedUrl, out string normalizedRequestParameters, out string authorationRequestParameters )
         {
             normalizedUrl = null;
             normalizedRequestParameters = null;
+            authorationRequestParameters = null;
 
             switch ( signatureType ) {
             case SignatureTypes.PLAINTEXT:
                 return HttpUtility.UrlEncode( string.Format( "{0}&{1}", consumerSecret, tokenSecret ) );
             case SignatureTypes.HMACSHA1:
-                string signatureBase = GenerateSignatureBase( url, consumerKey, token, tokenSecret, httpMethod, timeStamp, nonce, HMACSHA1SignatureType, out normalizedUrl, out normalizedRequestParameters );
+                string signatureBase = GenerateSignatureBase( url, consumerKey, token, tokenSecret, httpMethod, timeStamp, nonce, HMACSHA1SignatureType, out normalizedUrl, out normalizedRequestParameters, out authorationRequestParameters );
 
                 HMACSHA1 hmacsha1 = new HMACSHA1();
                 hmacsha1.Key = Encoding.ASCII.GetBytes( string.Format( "{0}&{1}", UrlEncode( consumerSecret ), string.IsNullOrEmpty( tokenSecret ) ? "" : UrlEncode( tokenSecret ) ) );
 
-                return GenerateSignatureUsingHash( signatureBase, hmacsha1 );
+                string signature = GenerateSignatureUsingHash( signatureBase, hmacsha1 );
+                authorationRequestParameters += string.Format( "oauth_signature=\"{0}\"", signature );
+                return signature;
             case SignatureTypes.RSASHA1:
                 throw new NotImplementedException();
             default:

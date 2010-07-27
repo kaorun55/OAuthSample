@@ -5,6 +5,7 @@ using System.Text;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.IO;
 
 namespace OAuthSample
 {
@@ -15,7 +16,7 @@ namespace OAuthSample
         const string Authorize = "https://cacoo.com/oauth/authorize";
         const string ReqestToken = "https://cacoo.com/oauth/request_token";
 
-        const string Diagrams = "https://cacoo.com/api/v1/users/kaorun55.xml";
+        const string Diagrams = "http://cacoo.com/api/v1/users/kaorun55.xml";
 
         static void Main( string[] args )
         {
@@ -24,21 +25,28 @@ namespace OAuthSample
                 OAuth.OAuthBase oauth = new OAuth.OAuthBase();
 
                 Uri uri = new Uri( Diagrams );
-                string normalizedUrl, normalizedRequestParameters;
+                string normalizedUrl, normalizedRequestParameters, authorationRequestParameters;
                 string signature = oauth.GenerateSignature( uri, OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret,
                     OAuth.APIKey.Token, OAuth.APIKey.TokenSecret,
                     "POST", oauth.GenerateTimeStamp(), oauth.GenerateNonce(), OAuth.OAuthBase.SignatureTypes.HMACSHA1,
-                    out normalizedUrl, out normalizedRequestParameters );
+                    out normalizedUrl, out normalizedRequestParameters, out authorationRequestParameters );
 
-                string requeset = string.Format( "{2}&oauth_signature={0}&oauth_verifier={1}", signature, OAuth.APIKey.PIN, normalizedRequestParameters );
+                Console.WriteLine( normalizedUrl );
+                Console.WriteLine( normalizedRequestParameters );
+                Console.WriteLine( authorationRequestParameters );
+
+                //string requeset = string.Format( "{2}&oauth_signature={0}&oauth_verifier={1}", signature, OAuth.APIKey.PIN, normalizedRequestParameters );
+                string requeset = string.Format( "{2}", signature, OAuth.APIKey.PIN, normalizedRequestParameters );
                 string requesetUrl = Diagrams + "?" + requeset;
-                Process.Start( requesetUrl );
-                Console.WriteLine( requeset );
-                HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( requesetUrl );
-                webreq.Headers.Set( "Authorization", "OAuth " + requeset );
-
-                //oauth_token,oauth_token_secretの取得
+                HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( Diagrams );
                 webreq.Method = "POST";
+
+                byte[] byteArray = Encoding.UTF8.GetBytes( requeset );
+                Stream dataStream = webreq.GetRequestStream();
+                dataStream.Write( byteArray, 0, byteArray.Length );
+                dataStream.Close();
+    
+                //webreq.Headers.Add( "Authorization: OAuth " + authorationRequestParameters );
                 HttpWebResponse webres = (System.Net.HttpWebResponse)webreq.GetResponse();
 
                 string result;

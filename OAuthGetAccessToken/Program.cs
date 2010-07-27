@@ -27,9 +27,9 @@ namespace OAuthGetAccessToken
                 System.Uri uri = new Uri( ReqestToken );
                 string timestamp = oauth.GenerateTimeStamp();
 
-                string normalizedUrl, normalizedRequestParameters;
+                string normalizedUrl, normalizedRequestParameters, authorationRequestParameters;
                 string signature = oauth.GenerateSignature( uri, OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret, "", "", "GET", timestamp,
-                            nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1, out normalizedUrl, out normalizedRequestParameters );
+                            nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1, out normalizedUrl, out normalizedRequestParameters, out authorationRequestParameters );
 
                 //oauth_token,oauth_token_secret取得
                 string request = ReqestToken + string.Format( "?{0}&oauth_signature={1}", normalizedRequestParameters, signature );
