@@ -1,0 +1,19 @@
+README
+=============
+
+認証データについて
+-------
+OAuthSample\APIKey 以下に CacooApiKey.cs というファイルを下記の要領で作ってください
+    namespace OAuth
+    {
+        public class APIKey
+        {
+            // 公開しないようにする
+            public const string ConsumerKey = "************";
+            public const string ConsumerSecret = "************************************";
+
+            public const string Token = "************************************";
+            public const string TokenSecret = "************************************";
+            public const string PIN = "*******";
+        }
+    }
