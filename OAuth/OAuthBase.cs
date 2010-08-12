@@ -97,6 +97,33 @@ namespace OAuth
         protected string unreservedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~";
 
         /// <summary>
+        /// 
+        /// </summary>
+        public string NormalizedUrl
+        {
+            private set;
+            get;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string NormalizedRequestParameters
+        {
+            private set;
+            get;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string AuthorizationRequestParameters
+        {
+            private set;
+            get;
+        }
+
+        /// <summary>
         /// Helper function to compute a hash value
         /// </summary>
         /// <param name="hashAlgorithm">The hashing algoirhtm used. If that algorithm needs some initialization, like HMAC and its derivatives, they should be initialized prior to passing it to this function</param>
@@ -202,7 +229,7 @@ namespace OAuth
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <param name="signatureType">The signature type. To use the default values use <see cref="OAuthBase.SignatureTypes">OAuthBase.SignatureTypes</see>.</param>
         /// <returns>The signature base</returns>
-        public string GenerateSignatureBase( Uri url, string consumerKey, string token, string tokenSecret, string httpMethod, string timeStamp, string nonce, string signatureType, string pin, out string normalizedUrl, out string normalizedRequestParameters, out string authorizationRequestParameters )
+        public string GenerateSignatureBase( Uri url, string consumerKey, string token, string tokenSecret, string httpMethod, string timeStamp, string nonce, string signatureType, string pin )
         {
             if ( token == null ) {
                 token = string.Empty;
@@ -224,9 +251,6 @@ namespace OAuth
                 throw new ArgumentNullException( "signatureType" );
             }
 
-            normalizedUrl = null;
-            normalizedRequestParameters = null;
-
             List<QueryParameter> parameters = GetQueryParameters( url.Query );
 
             parameters.Add( new QueryParameter( OAuthConsumerKeyKey, consumerKey ) );
@@ -245,22 +269,27 @@ namespace OAuth
 
             parameters.Sort( new QueryParameterComparer() );
 
-            normalizedUrl = string.Format( "{0}://{1}", url.Scheme, url.Host );
+            NormalizedUrl = string.Format( "{0}://{1}", url.Scheme, url.Host );
             if ( !((url.Scheme == "http" && url.Port == 80) || (url.Scheme == "https" && url.Port == 443)) ) {
-                normalizedUrl += ":" + url.Port;
+                NormalizedUrl += ":" + url.Port;
             }
-            normalizedUrl += url.AbsolutePath;
-            normalizedRequestParameters = NormalizeRequestParameters( parameters );
-            authorizationRequestParameters = AuthorationRequestParameters( parameters );
+            NormalizedUrl += url.AbsolutePath;
+            NormalizedRequestParameters = NormalizeRequestParameters( parameters );
+            AuthorizationRequestParameters = AuthorationRequestParameters( parameters );
 
             StringBuilder signatureBase = new StringBuilder();
             signatureBase.AppendFormat( "{0}&", httpMethod.ToUpper() );
-            signatureBase.AppendFormat( "{0}&", UrlEncode( normalizedUrl ) );
-            signatureBase.AppendFormat( "{0}", UrlEncode( normalizedRequestParameters ) );
+            signatureBase.AppendFormat( "{0}&", UrlEncode( NormalizedUrl ) );
+            signatureBase.AppendFormat( "{0}", UrlEncode( NormalizedRequestParameters ) );
 
             return signatureBase.ToString();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
         private string AuthorationRequestParameters( List<QueryParameter> parameters )
         {
             StringBuilder sb = new StringBuilder();
@@ -295,11 +324,10 @@ namespace OAuth
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <returns>A base64 string of the hash value</returns>
         public string GenerateSignature( Uri url, string consumerKey, string consumerSecret, string token, string tokenSecret,
-            string httpMethod, string timeStamp, string nonce, string pin, out string normalizedUrl,
-            out string normalizedRequestParameters, out string authorizationRequestParameters )
+            string httpMethod, string timeStamp, string nonce, string pin  )
         {
             return GenerateSignature( url, consumerKey, consumerSecret, token, tokenSecret, httpMethod, timeStamp, nonce,
-                SignatureTypes.HMACSHA1, pin, out normalizedUrl, out normalizedRequestParameters, out authorizationRequestParameters );
+                SignatureTypes.HMACSHA1, pin );
         }
 
         /// <summary>
@@ -314,20 +342,14 @@ namespace OAuth
         /// <param name="signatureType">The type of signature to use</param>
         /// <returns>A base64 string of the hash value</returns>
         public string GenerateSignature( Uri url, string consumerKey, string consumerSecret, string token, string tokenSecret,
-                                    string httpMethod, string timeStamp, string nonce, SignatureTypes signatureType,
-                                    string pin, out string normalizedUrl, out string normalizedRequestParameters, out string authorizationRequestParameters )
+                                    string httpMethod, string timeStamp, string nonce, SignatureTypes signatureType, string pin )
         {
-            normalizedUrl = null;
-            normalizedRequestParameters = null;
-            authorizationRequestParameters = null;
-
             switch ( signatureType ) {
             case SignatureTypes.PLAINTEXT:
                 return HttpUtility.UrlEncode( string.Format( "{0}&{1}", consumerSecret, tokenSecret ) );
             case SignatureTypes.HMACSHA1:
                 string signatureBase = GenerateSignatureBase( url, consumerKey, token, tokenSecret, httpMethod,
-                    timeStamp, nonce, HMACSHA1SignatureType, pin, out normalizedUrl,
-                    out normalizedRequestParameters, out authorizationRequestParameters );
+                    timeStamp, nonce, HMACSHA1SignatureType, pin );
 
                 HMACSHA1 hmacsha1 = new HMACSHA1();
                 string key = string.Format( "{0}&{1}", UrlEncode( consumerSecret ), string.IsNullOrEmpty( tokenSecret ) ? "" : UrlEncode( tokenSecret ) );
@@ -335,7 +357,7 @@ namespace OAuth
 
                 string signature = GenerateSignatureUsingHash( signatureBase, hmacsha1 );
 
-                authorizationRequestParameters += string.Format( "oauth_signature=\"{0}\"", UrlEncode( signature ) );
+                AuthorizationRequestParameters += string.Format( "oauth_signature=\"{0}\"", UrlEncode( signature ) );
 
                 return signature;
             case SignatureTypes.RSASHA1:

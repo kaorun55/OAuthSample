@@ -38,15 +38,15 @@ namespace TwitterOAuthGetAccessToken
             Trace.WriteLine( "timestamp = " + timestamp );
 
             //OAuthBace.csを用いてsignature生成
-            string normalizedUrl, normalizedRequestParameters, s;
             string signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, "", "", "GET", timestamp, nonce,
-                OAuthBase.SignatureTypes.HMACSHA1, "", out normalizedUrl, out normalizedRequestParameters, out s );
+                OAuthBase.SignatureTypes.HMACSHA1, "" );
             Trace.WriteLine( "signature1 = " + signature );
-            Trace.WriteLine( "normalizedRequestParameters = " + normalizedRequestParameters );
+            Trace.WriteLine( "normalizedRequestParameters = " + oAuth.NormalizedRequestParameters );
 
 
             //oauth_token,oauth_token_secret取得
-            HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( OAuth.APIKey.ReqestToken + string.Format( "?{0}&oauth_signature={1}", normalizedRequestParameters, signature ) );
+            string request = OAuth.APIKey.ReqestToken + string.Format( "?{0}&oauth_signature={1}", oAuth.NormalizedRequestParameters, signature );
+            HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( request );
             webreq.Method = "GET";
             HttpWebResponse webres = (HttpWebResponse)webreq.GetResponse();
 
@@ -76,13 +76,12 @@ namespace TwitterOAuthGetAccessToken
             //oauth_token,oauth_token_secretを用いて再びsignature生成
             uri = new Uri( OAuth.APIKey.AccessToken );
             signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST",
-                    timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, pin,
-                    out normalizedUrl, out normalizedRequestParameters, out s );
+                    timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, pin );
             Trace.WriteLine( "signature2 = " + signature );
-            Trace.WriteLine( "normalizedRequestParameters = " + normalizedRequestParameters );
+            Trace.WriteLine( "normalizedRequestParameters = " + oAuth.NormalizedRequestParameters );
 
-            string request = OAuth.APIKey.AccessToken + string.Format( "?{3}&oauth_signature={0}", signature, result, pin, normalizedRequestParameters );
-            Console.WriteLine( normalizedRequestParameters );
+            request = OAuth.APIKey.AccessToken + string.Format( "?{3}&oauth_signature={0}", signature, result, pin, oAuth.NormalizedRequestParameters );
+            Console.WriteLine( oAuth.NormalizedRequestParameters );
             Console.WriteLine( signature );
             webreq = (System.Net.HttpWebRequest)WebRequest.Create( request );
 

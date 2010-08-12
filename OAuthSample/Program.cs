@@ -21,7 +21,6 @@ namespace OAuthSample
                 OAuth.OAuthBase oauth = new OAuth.OAuthBase();
 
                 Uri uri = new Uri( Diagrams );
-                string normalizedUrl, normalizedRequestParameters, s;
 
                 string timestamp = oauth.GenerateTimeStamp();
                 string nonce = oauth.GenerateNonce();
@@ -31,13 +30,13 @@ namespace OAuthSample
                 string signature = oauth.GenerateSignature( uri, OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret,
                     OAuth.APIKey.Token, OAuth.APIKey.TokenSecret,
                     "POST", timestamp, nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1,
-                    "", out normalizedUrl, out normalizedRequestParameters, out s );
+                    "" );
                 Trace.WriteLine( "signature = " + signature );
-                Trace.WriteLine( "s = " + s );
+                Trace.WriteLine( "AuthorizationRequestParameters = " + oauth.AuthorizationRequestParameters );
 
                 HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( Diagrams );
                 webreq.Method = "POST";
-                webreq.Headers.Add( "Authorization", "OAuth " + s );
+                webreq.Headers.Add( "Authorization", "OAuth " + oauth.AuthorizationRequestParameters );
                 HttpWebResponse webres = (System.Net.HttpWebResponse)webreq.GetResponse();
 
                 string result;

@@ -101,13 +101,12 @@ namespace TwitterOAuthGetAccessToken
 
 
             //OAuthBace.csを用いてsignature生成
-            string normalizedUrl, normalizedRequestParameters, s;
             string signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, "", "", "GET", timestamp, nonce,
-                OAuthBase.SignatureTypes.HMACSHA1, "", out normalizedUrl, out normalizedRequestParameters, out s );
+                OAuthBase.SignatureTypes.HMACSHA1, "" );
 
 
             //oauth_token,oauth_token_secret取得
-            HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( OAuth.APIKey.ReqestToken + string.Format( "?{0}&oauth_signature={1}", normalizedRequestParameters, signature ) );
+            HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( OAuth.APIKey.ReqestToken + string.Format( "?{0}&oauth_signature={1}", oAuth.NormalizedRequestParameters, signature ) );
             webreq.Method = "GET";
             HttpWebResponse webres = (HttpWebResponse)webreq.GetResponse();
 
@@ -134,9 +133,8 @@ namespace TwitterOAuthGetAccessToken
 
             //oauth_token,oauth_token_secretを用いて再びsignature生成
             signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST",
-                oAuth.GenerateTimeStamp(), oAuth.GenerateNonce(), OAuthBase.SignatureTypes.HMACSHA1, "",
-                out normalizedUrl, out normalizedRequestParameters, out s );
-            webreq = (System.Net.HttpWebRequest)WebRequest.Create( OAuth.APIKey.AccessToken + string.Format( "?{3}&oauth_signature={0}&oauth_verifier={2}", signature, result, PIN, normalizedRequestParameters ) );
+                oAuth.GenerateTimeStamp(), oAuth.GenerateNonce(), OAuthBase.SignatureTypes.HMACSHA1, "" );
+            webreq = (System.Net.HttpWebRequest)WebRequest.Create( OAuth.APIKey.AccessToken + string.Format( "?{3}&oauth_signature={0}&oauth_verifier={2}", signature, result, PIN, oAuth.NormalizedRequestParameters ) );
 
 
             //oauth_token,oauth_token_secretの取得
