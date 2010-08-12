@@ -22,9 +22,6 @@ namespace OAuthTest
         public const string ConsumerKey = "OKWyYVPvnpcBfbdmrJaNWx";
         public const string ConsumerSecret = "wObshonqbOqrnhIXGwflmlEVUFiiEJqScYLmKbPYTe";
 
-        public const string Token = "17fb65da01aa217b9d11ab55d07e6f9b";
-        public const string TokenSecret = "933fee29fd7a2215d5bc40568e42f426";
-
         public OAuthTest()
         {
             //
