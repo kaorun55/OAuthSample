@@ -203,7 +203,7 @@ namespace OAuth
         /// </summary>
         /// <param name="parameters">The list of parameters already sorted</param>
         /// <returns>a string representing the normalized parameters</returns>
-        protected string NormalizeRequestParameters( IList<QueryParameter> parameters )
+        protected string GenerateNormalizeRequestParameters( IList<QueryParameter> parameters )
         {
             StringBuilder sb = new StringBuilder();
             QueryParameter p = null;
@@ -243,6 +243,42 @@ namespace OAuth
                 throw new ArgumentNullException( "signatureType" );
             }
 
+            List<QueryParameter> parameters = GenerateParameters( url, consumer, timeStamp, nonce, signatureType, pin );
+
+            NormalizedUrl = GenerateNormalizedUrl( url );
+            NormalizedRequestParameters = GenerateNormalizeRequestParameters( parameters );
+            AuthorizationRequestParameters = GenerateAuthorizationRequestParameters( parameters );
+
+            return GenerateSignatureBase( httpMethod );
+        }
+
+        /// <summary>
+        /// NormalizedUrlの生成
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        private string GenerateNormalizedUrl( Uri url )
+        {
+            string NormalizedUrl = string.Format( "{0}://{1}", url.Scheme, url.Host );
+            if ( !((url.Scheme == "http" && url.Port == 80) || (url.Scheme == "https" && url.Port == 443)) ) {
+                NormalizedUrl += ":" + url.Port;
+            }
+
+            return NormalizedUrl + url.AbsolutePath;
+        }
+
+        /// <summary>
+        /// パラメータの作成
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="consumer"></param>
+        /// <param name="timeStamp"></param>
+        /// <param name="nonce"></param>
+        /// <param name="signatureType"></param>
+        /// <param name="pin"></param>
+        /// <returns></returns>
+        private List<QueryParameter> GenerateParameters( Uri url, OAuthConsumer consumer, string timeStamp, string nonce, string signatureType, string pin )
+        {
             List<QueryParameter> parameters = GetQueryParameters( url.Query );
 
             parameters.Add( new QueryParameter( OAuthConsumerKeyKey, consumer.ConsumerKey ) );
@@ -260,15 +296,16 @@ namespace OAuth
             }
 
             parameters.Sort( new QueryParameterComparer() );
+            return parameters;
+        }
 
-            NormalizedUrl = string.Format( "{0}://{1}", url.Scheme, url.Host );
-            if ( !((url.Scheme == "http" && url.Port == 80) || (url.Scheme == "https" && url.Port == 443)) ) {
-                NormalizedUrl += ":" + url.Port;
-            }
-            NormalizedUrl += url.AbsolutePath;
-            NormalizedRequestParameters = NormalizeRequestParameters( parameters );
-            AuthorizationRequestParameters = AuthorationRequestParameters( parameters );
-
+        /// <summary>
+        /// シグニチャのベースを生成する
+        /// </summary>
+        /// <param name="httpMethod"></param>
+        /// <returns></returns>
+        private string GenerateSignatureBase( string httpMethod )
+        {
             StringBuilder signatureBase = new StringBuilder();
             signatureBase.AppendFormat( "{0}&", httpMethod.ToUpper() );
             signatureBase.AppendFormat( "{0}&", UrlEncode( NormalizedUrl ) );
@@ -278,11 +315,11 @@ namespace OAuth
         }
 
         /// <summary>
-        /// 
+        /// Authorization 用パラメータの生成
         /// </summary>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        private string AuthorationRequestParameters( List<QueryParameter> parameters )
+        private string GenerateAuthorizationRequestParameters( List<QueryParameter> parameters )
         {
             StringBuilder sb = new StringBuilder();
             QueryParameter p = null;
@@ -338,10 +375,8 @@ namespace OAuth
             case SignatureTypes.PLAINTEXT:
                 return HttpUtility.UrlEncode( string.Format( "{0}&{1}", consumer.ConsumerSecret, consumer.TokenSecret ) );
             case SignatureTypes.HMACSHA1:
-                string signatureBase = GenerateSignatureBase( url, consumer, httpMethod, timeStamp, nonce,
-                    HMACSHA1SignatureType, pin );
-
-                string signature = CreateSignature( consumer, signatureBase );
+                string signatureBase = GenerateSignatureBase( url, consumer, httpMethod, timeStamp, nonce, HMACSHA1SignatureType, pin );
+                string signature = GenerateSignature( consumer, signatureBase );
 
                 // 認証パラメータ用にシグニチャにを付加する
                 AuthorizationRequestParameters += string.Format( "oauth_signature=\"{0}\"", UrlEncode( signature ) );
@@ -360,10 +395,10 @@ namespace OAuth
         /// <param name="consumer"></param>
         /// <param name="signatureBase"></param>
         /// <returns></returns>
-        private string CreateSignature( OAuthConsumer consumer, string signatureBase )
+        private string GenerateSignature( OAuthConsumer consumer, string signatureBase )
         {
             HMACSHA1 hmacsha1 = new HMACSHA1();
-            hmacsha1.Key = Encoding.UTF8.GetBytes( CreateMacKey( consumer ) );
+            hmacsha1.Key = Encoding.UTF8.GetBytes( GenerateMacKey( consumer ) );
             return GenerateSignatureUsingHash( signatureBase, hmacsha1 );
         }
 
@@ -372,7 +407,7 @@ namespace OAuth
         /// </summary>
         /// <param name="consumer"></param>
         /// <returns></returns>
-        private string CreateMacKey( OAuthConsumer consumer )
+        private string GenerateMacKey( OAuthConsumer consumer )
         {
             return string.Format( "{0}&{1}", UrlEncode( consumer.ConsumerSecret ), consumer.TokenSecret );
         }

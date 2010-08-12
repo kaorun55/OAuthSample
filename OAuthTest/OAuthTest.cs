@@ -118,11 +118,8 @@ namespace OAuthTest
             string timestamp = "1281615317";
             string nonce = "2677625";
 
-            string token = "f1b3a9fdb759dbd0c1818f7cdef307c0";
-            string tokenSecret = "2e55a9ea2e9c286abfedadffecf15f74";
-
             OAuthConsumer consumer = new OAuthConsumer( ConsumerKey, ConsumerSecret );
-            consumer.SetTokenWithSecret( token, tokenSecret );
+            consumer.SetTokenWithSecret( "f1b3a9fdb759dbd0c1818f7cdef307c0", "2e55a9ea2e9c286abfedadffecf15f74" );
             string signature = oauth.GenerateSignature( uri, consumer,
                 "POST", timestamp, nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1, "" );
 
