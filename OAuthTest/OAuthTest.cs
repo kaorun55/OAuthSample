@@ -78,7 +78,8 @@ namespace OAuthTest
             string timestamp = "1281614602";
             string nonce = "8715791";
 
-            string signature = oauth.GenerateSignature( uri, ConsumerKey, ConsumerSecret, "", "", "GET",
+            OAuthConsumer consumer = new OAuthConsumer( ConsumerKey, ConsumerSecret );
+            string signature = oauth.GenerateSignature( uri, consumer, "GET",
                     timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, "" );
 
             Assert.AreEqual( "FOBRl2mkgAx9tNdQeNIiIxjwhxo=", signature );
@@ -95,10 +96,10 @@ namespace OAuthTest
             string timestamp = "1281614602";
             string nonce = "8715791";
             string pin = "0011696";
-            string token = "021d4561687d6c5d328ad5b491624f30";
-            string tokenSecret = "552ae19dc6f2b7736db9678bb4de2f00";
+            OAuth.OAuthConsumer consumer = new OAuthConsumer( ConsumerKey, ConsumerSecret );
+            consumer.SetTokenWithSecret( "021d4561687d6c5d328ad5b491624f30", "552ae19dc6f2b7736db9678bb4de2f00" );
 
-            string signature = oauth.GenerateSignature( uri, ConsumerKey, ConsumerSecret, token, tokenSecret, "POST",
+            string signature = oauth.GenerateSignature( uri, consumer, "POST",
                     timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, pin );
 
             Assert.AreEqual( "w9XSZS9loX/pyz6DtO2Q04QmDAw=", signature );
@@ -120,8 +121,9 @@ namespace OAuthTest
             string token = "f1b3a9fdb759dbd0c1818f7cdef307c0";
             string tokenSecret = "2e55a9ea2e9c286abfedadffecf15f74";
 
-            string signature = oauth.GenerateSignature( uri, ConsumerKey, ConsumerSecret,
-                token, tokenSecret,
+            OAuthConsumer consumer = new OAuthConsumer( ConsumerKey, ConsumerSecret );
+            consumer.SetTokenWithSecret( token, tokenSecret );
+            string signature = oauth.GenerateSignature( uri, consumer,
                 "POST", timestamp, nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1, "" );
 
             Assert.AreEqual( "YRhAaq8P+fN4DgkFhaF6x+EH1qA=", signature );

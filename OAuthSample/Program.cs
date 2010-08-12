@@ -27,10 +27,10 @@ namespace OAuthSample
                 Trace.WriteLine( "nonce = " + nonce );
                 Trace.WriteLine( "timestamp = " + timestamp );
 
-                string signature = oauth.GenerateSignature( uri, OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret,
-                    OAuth.APIKey.Token, OAuth.APIKey.TokenSecret,
-                    "POST", timestamp, nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1,
-                    "" );
+                OAuth.OAuthConsumer consumer = new OAuth.OAuthConsumer( OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret );
+                consumer.SetTokenWithSecret( OAuth.APIKey.Token, OAuth.APIKey.TokenSecret );
+
+                string signature = oauth.GenerateSignature( uri,consumer, "POST", timestamp, nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1, "" );
                 Trace.WriteLine( "signature = " + signature );
                 Trace.WriteLine( "AuthorizationRequestParameters = " + oauth.AuthorizationRequestParameters );
 

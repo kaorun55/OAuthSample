@@ -38,7 +38,8 @@ namespace TwitterOAuthGetAccessToken
             Trace.WriteLine( "timestamp = " + timestamp );
 
             //OAuthBace.csを用いてsignature生成
-            string signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, "", "", "GET", timestamp, nonce,
+            OAuthConsumer consumer = new OAuthConsumer( consumer_key, consumer_secret );
+            string signature = oAuth.GenerateSignature( uri, consumer, "GET", timestamp, nonce,
                 OAuthBase.SignatureTypes.HMACSHA1, "" );
             Trace.WriteLine( "signature1 = " + signature );
             Trace.WriteLine( "normalizedRequestParameters = " + oAuth.NormalizedRequestParameters );
@@ -75,7 +76,9 @@ namespace TwitterOAuthGetAccessToken
 
             //oauth_token,oauth_token_secretを用いて再びsignature生成
             uri = new Uri( OAuth.APIKey.AccessToken );
-            signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST",
+            consumer = new OAuthConsumer( consumer_key, consumer_secret );
+            consumer.SetTokenWithSecret( token, tokenSecret );
+            signature = oAuth.GenerateSignature( uri, consumer, "POST",
                     timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, pin );
             Trace.WriteLine( "signature2 = " + signature );
             Trace.WriteLine( "normalizedRequestParameters = " + oAuth.NormalizedRequestParameters );

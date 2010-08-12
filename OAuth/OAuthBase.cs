@@ -229,17 +229,9 @@ namespace OAuth
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <param name="signatureType">The signature type. To use the default values use <see cref="OAuthBase.SignatureTypes">OAuthBase.SignatureTypes</see>.</param>
         /// <returns>The signature base</returns>
-        public string GenerateSignatureBase( Uri url, string consumerKey, string token, string tokenSecret, string httpMethod, string timeStamp, string nonce, string signatureType, string pin )
+        public string GenerateSignatureBase( Uri url, OAuthConsumer consumer, string httpMethod, string timeStamp, string nonce, string signatureType, string pin )
         {
-            if ( token == null ) {
-                token = string.Empty;
-            }
-
-            if ( tokenSecret == null ) {
-                tokenSecret = string.Empty;
-            }
-
-            if ( string.IsNullOrEmpty( consumerKey ) ) {
+            if ( string.IsNullOrEmpty( consumer.ConsumerKey ) ) {
                 throw new ArgumentNullException( "consumerKey" );
             }
 
@@ -253,14 +245,14 @@ namespace OAuth
 
             List<QueryParameter> parameters = GetQueryParameters( url.Query );
 
-            parameters.Add( new QueryParameter( OAuthConsumerKeyKey, consumerKey ) );
+            parameters.Add( new QueryParameter( OAuthConsumerKeyKey, consumer.ConsumerKey ) );
             parameters.Add( new QueryParameter( OAuthVersionKey, OAuthVersion ) );
             parameters.Add( new QueryParameter( OAuthSignatureMethodKey, signatureType ) );
             parameters.Add( new QueryParameter( OAuthTimestampKey, timeStamp ) );
             parameters.Add( new QueryParameter( OAuthNonceKey, nonce ) );
 
-            if ( !string.IsNullOrEmpty( token ) ) {
-                parameters.Add( new QueryParameter( OAuthTokenKey, token ) );
+            if ( !string.IsNullOrEmpty( consumer.Token ) ) {
+                parameters.Add( new QueryParameter( OAuthTokenKey, consumer.Token ) );
             }
 
             if ( !string.IsNullOrEmpty( pin ) ) {
@@ -323,11 +315,9 @@ namespace OAuth
         /// <param name="tokenSecret">The token secret, if available. If not available pass null or an empty string</param>
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <returns>A base64 string of the hash value</returns>
-        public string GenerateSignature( Uri url, string consumerKey, string consumerSecret, string token, string tokenSecret,
-            string httpMethod, string timeStamp, string nonce, string pin  )
+        public string GenerateSignature( Uri url, OAuthConsumer consumer, string httpMethod, string timeStamp, string nonce, string pin  )
         {
-            return GenerateSignature( url, consumerKey, consumerSecret, token, tokenSecret, httpMethod, timeStamp, nonce,
-                SignatureTypes.HMACSHA1, pin );
+            return GenerateSignature( url, consumer, httpMethod, timeStamp, nonce, SignatureTypes.HMACSHA1, pin );
         }
 
         /// <summary>
@@ -341,22 +331,19 @@ namespace OAuth
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <param name="signatureType">The type of signature to use</param>
         /// <returns>A base64 string of the hash value</returns>
-        public string GenerateSignature( Uri url, string consumerKey, string consumerSecret, string token, string tokenSecret,
-                                    string httpMethod, string timeStamp, string nonce, SignatureTypes signatureType, string pin )
+        public string GenerateSignature( Uri url, OAuthConsumer consumer, string httpMethod, string timeStamp,
+            string nonce, SignatureTypes signatureType, string pin )
         {
             switch ( signatureType ) {
             case SignatureTypes.PLAINTEXT:
-                return HttpUtility.UrlEncode( string.Format( "{0}&{1}", consumerSecret, tokenSecret ) );
+                return HttpUtility.UrlEncode( string.Format( "{0}&{1}", consumer.ConsumerSecret, consumer.TokenSecret ) );
             case SignatureTypes.HMACSHA1:
-                string signatureBase = GenerateSignatureBase( url, consumerKey, token, tokenSecret, httpMethod,
-                    timeStamp, nonce, HMACSHA1SignatureType, pin );
+                string signatureBase = GenerateSignatureBase( url, consumer, httpMethod, timeStamp, nonce,
+                    HMACSHA1SignatureType, pin );
 
-                HMACSHA1 hmacsha1 = new HMACSHA1();
-                string key = string.Format( "{0}&{1}", UrlEncode( consumerSecret ), string.IsNullOrEmpty( tokenSecret ) ? "" : UrlEncode( tokenSecret ) );
-                hmacsha1.Key = Encoding.UTF8.GetBytes( key );
+                string signature = CreateSignature( consumer, signatureBase );
 
-                string signature = GenerateSignatureUsingHash( signatureBase, hmacsha1 );
-
+                // 認証パラメータ用にシグニチャにを付加する
                 AuthorizationRequestParameters += string.Format( "oauth_signature=\"{0}\"", UrlEncode( signature ) );
 
                 return signature;
@@ -365,6 +352,29 @@ namespace OAuth
             default:
                 throw new ArgumentException( "Unknown signature type", "signatureType" );
             }
+        }
+
+        /// <summary>
+        /// シグニチャを作成する
+        /// </summary>
+        /// <param name="consumer"></param>
+        /// <param name="signatureBase"></param>
+        /// <returns></returns>
+        private string CreateSignature( OAuthConsumer consumer, string signatureBase )
+        {
+            HMACSHA1 hmacsha1 = new HMACSHA1();
+            hmacsha1.Key = Encoding.UTF8.GetBytes( CreateMacKey( consumer ) );
+            return GenerateSignatureUsingHash( signatureBase, hmacsha1 );
+        }
+
+        /// <summary>
+        /// HMACSHA1のためのキーを作成する
+        /// </summary>
+        /// <param name="consumer"></param>
+        /// <returns></returns>
+        private string CreateMacKey( OAuthConsumer consumer )
+        {
+            return string.Format( "{0}&{1}", UrlEncode( consumer.ConsumerSecret ), consumer.TokenSecret );
         }
 
         /// <summary>
