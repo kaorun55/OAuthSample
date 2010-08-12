@@ -29,87 +29,31 @@ namespace TwitterOAuthGetAccessToken
         private static void getAccessToken( string consumer_key, string consumer_secret )
         {
             System.Net.ServicePointManager.Expect100Continue = false;
-            OAuthBase oAuth = new OAuthBase();
 
-            System.Uri uri = new Uri( OAuth.APIKey.ReqestToken );
-            string nonce = oAuth.GenerateNonce();
-            string timestamp = oAuth.GenerateTimeStamp();
-            Trace.WriteLine( "nonce = " + nonce );
-            Trace.WriteLine( "timestamp = " + timestamp );
-
-            //OAuthBace.csを用いてsignature生成
+            // リクエストトークンを取得
+            OAuthProvider provider = new OAuthProvider( APIKey.AccessToken, APIKey.Authorize, APIKey.ReqestToken );
             OAuthConsumer consumer = new OAuthConsumer( consumer_key, consumer_secret );
-            string signature = oAuth.GenerateSignature( uri, consumer, "GET",  "" );
-            Trace.WriteLine( "signature1 = " + signature );
-            Trace.WriteLine( "normalizedRequestParameters = " + oAuth.NormalizedRequestParameters );
+            string AuthorizeURL = provider.RetrieveRequestToken( ref consumer );
 
-
-            //oauth_token,oauth_token_secret取得
-            string request = OAuth.APIKey.ReqestToken + string.Format( "?{0}&oauth_signature={1}", oAuth.NormalizedRequestParameters, signature );
-            HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( request );
-            webreq.Method = "GET";
-            HttpWebResponse webres = (HttpWebResponse)webreq.GetResponse();
-
-            string result = "";
-            using ( System.IO.Stream st = webres.GetResponseStream() )
-            using ( System.IO.StreamReader sr = new System.IO.StreamReader( st, Encoding.GetEncoding( 932 ) ) ) {
-                result = sr.ReadToEnd();
-            }
-
-            Console.WriteLine( result );
-
-            //正規表現でoauth_token,oauth_token_secret取得
-            Match match = Regex.Match( result, @"oauth_token=(.*?)&oauth_token_secret=(.*?)&oauth_callback.*" );
-            string token = match.Groups[1].Value;
-            string tokenSecret = match.Groups[2].Value;
-            Trace.WriteLine( "token = " + token );
-            Trace.WriteLine( "tokenSecret = " + tokenSecret );
-
+            Trace.WriteLine( "token = " + consumer.Token );
+            Trace.WriteLine( "tokenSecret = " + consumer.TokenSecret );
 
             //ブラウザからPIN確認
-            string AuthorizeURL = OAuth.APIKey.Authorize + "?" + result;
             System.Diagnostics.Process.Start( AuthorizeURL );
             Console.Write( "PIN:" );
             string pin = Console.ReadLine();
             Trace.WriteLine( "pin = " + pin );
 
-            //oauth_token,oauth_token_secretを用いて再びsignature生成
-            uri = new Uri( OAuth.APIKey.AccessToken );
-            consumer = new OAuthConsumer( consumer_key, consumer_secret );
-            consumer.SetTokenWithSecret( token, tokenSecret );
-            signature = oAuth.GenerateSignature( uri, consumer, "POST", pin );
-            Trace.WriteLine( "signature2 = " + signature );
-            Trace.WriteLine( "normalizedRequestParameters = " + oAuth.NormalizedRequestParameters );
+            provider.RetrieveAccessToken( ref consumer, pin );
 
-            request = OAuth.APIKey.AccessToken + string.Format( "?{3}&oauth_signature={0}", signature, result, pin, oAuth.NormalizedRequestParameters );
-            Console.WriteLine( oAuth.NormalizedRequestParameters );
-            Console.WriteLine( signature );
-            webreq = (System.Net.HttpWebRequest)WebRequest.Create( request );
-
-
-            //oauth_token,oauth_token_secretの取得
-            webreq.Method = "POST";
-            webres = (System.Net.HttpWebResponse)webreq.GetResponse();
-
-            using ( System.IO.Stream st = webres.GetResponseStream() )
-            using ( System.IO.StreamReader sr = new System.IO.StreamReader( st, Encoding.GetEncoding( 932 ) ) ) {
-                result = sr.ReadToEnd();
-            }
-
-            Console.WriteLine( result );
-
-            //正規表現でoauth_token,oauth_token_secret取得
-            match = Regex.Match( result, @"oauth_token=(.*)&oauth_token_secret=(.*)" );
-            token = match.Groups[1].Value;
-            tokenSecret = match.Groups[2].Value;
-
-            Console.WriteLine( "public const string Token = \"" + token + "\";" );
-            Console.WriteLine( "public const string TokenSecret = \"" + tokenSecret + "\";" );
-            Trace.WriteLine( "token = " + token );
-            Trace.WriteLine( "tokenSecret = " + tokenSecret );
+            Console.WriteLine( "public const string Token = \"" + consumer.Token + "\";" );
+            Console.WriteLine( "public const string TokenSecret = \"" + consumer.TokenSecret + "\";" );
+            Trace.WriteLine( "token = " + consumer.Token );
+            Trace.WriteLine( "tokenSecret = " + consumer.TokenSecret );
 
             //デスクトップ\oauth_token.txtに保存
-            File.WriteAllText( Environment.GetFolderPath( Environment.SpecialFolder.Desktop ) + @"\cacoo_oauth_token.txt", result );
+            File.WriteAllText( Environment.GetFolderPath( Environment.SpecialFolder.Desktop ) + @"\cacoo_oauth_token.txt",
+                consumer.Token + ", " + consumer.TokenSecret );
         }
     }
 }
