@@ -73,20 +73,72 @@ namespace OAuthTest
         #endregion
 
         [TestMethod]
-        public void PINを取得後の認証()
+        public void PINを取得するためのトークンを取得するためのシグニチャ()
+        {
+            OAuth.OAuthBase oauth = new OAuth.OAuthBase();
+
+            Uri uri = new Uri( ReqestToken );
+            string timestamp = "1281614602";
+            string nonce = "8715791";
+
+            string normalizedUrl, normalizedRequestParameters, s;
+
+            string signature = oauth.GenerateSignature( uri, ConsumerKey, ConsumerSecret, "", "", "GET",
+                    timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, "",
+                    out normalizedUrl, out normalizedRequestParameters, out s );
+
+            Assert.AreEqual( "FOBRl2mkgAx9tNdQeNIiIxjwhxo=", signature );
+            Assert.AreEqual( "oauth_consumer_key=OKWyYVPvnpcBfbdmrJaNWx&oauth_nonce=8715791&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1281614602&oauth_version=1.0",
+                normalizedRequestParameters );
+        }
+
+        [TestMethod]
+        public void PINを取得後の認証のためのシグニチャ()
         {
             OAuth.OAuthBase oauth = new OAuth.OAuthBase();
 
             Uri uri = new Uri( AccessToken );
-            string timestamp = "1281594194";
-            string nonce = "-4553643980892898909";
-            string pin = "8836708";
+            string timestamp = "1281614602";
+            string nonce = "8715791";
+            string pin = "0011696";
+            string token = "021d4561687d6c5d328ad5b491624f30";
+            string tokenSecret = "552ae19dc6f2b7736db9678bb4de2f00";
+
             string normalizedUrl, normalizedRequestParameters, s;
-            string signature = oauth.GenerateSignature( uri, ConsumerKey, ConsumerSecret, Token, TokenSecret, "POST",
+
+            string signature = oauth.GenerateSignature( uri, ConsumerKey, ConsumerSecret, token, tokenSecret, "POST",
                     timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, pin,
                     out normalizedUrl, out normalizedRequestParameters, out s );
 
-            Assert.AreEqual( "XIhBEU281BfkWcvgU20fKlrYCIk=", signature );
+            Assert.AreEqual( "w9XSZS9loX/pyz6DtO2Q04QmDAw=", signature );
+            Assert.AreEqual( "oauth_consumer_key=OKWyYVPvnpcBfbdmrJaNWx&oauth_nonce=8715791&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1281614602&oauth_token=021d4561687d6c5d328ad5b491624f30&oauth_verifier=0011696&oauth_version=1.0",
+                normalizedRequestParameters );
+        }
+
+        [TestMethod]
+        public void データ取得のためのシグニチャ()
+        {
+            OAuth.OAuthBase oauth = new OAuth.OAuthBase();
+
+            const string Diagrams = "http://cacoo.com/api/v1/diagrams.xml";
+            Uri uri = new Uri( Diagrams );
+
+            string normalizedUrl, normalizedRequestParameters, s;
+
+            string timestamp = "1281615317";
+            string nonce = "2677625";
+
+            string token = "f1b3a9fdb759dbd0c1818f7cdef307c0";
+            string tokenSecret = "2e55a9ea2e9c286abfedadffecf15f74";
+
+            string signature = oauth.GenerateSignature( uri, ConsumerKey, ConsumerSecret,
+                token, tokenSecret,
+                "POST", timestamp, nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1,
+                "", out normalizedUrl, out normalizedRequestParameters, out s );
+
+            Assert.AreEqual( "YRhAaq8P+fN4DgkFhaF6x+EH1qA=", signature );
+            Assert.AreEqual( "oauth_consumer_key=\"OKWyYVPvnpcBfbdmrJaNWx\", oauth_nonce=\"2677625\", oauth_signature_method=\"HMAC-SHA1\", oauth_timestamp=\"1281615317\", oauth_token=\"f1b3a9fdb759dbd0c1818f7cdef307c0\", oauth_version=\"1.0\", oauth_signature=\"YRhAaq8P%2BfN4DgkFhaF6x%2BEH1qA%3D\"",
+                s );
         }
     }
 }
