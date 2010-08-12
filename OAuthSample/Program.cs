@@ -29,11 +29,10 @@ namespace OAuthSample
                 string signature = oauth.GenerateSignature( uri, OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret,
                     OAuth.APIKey.Token, OAuth.APIKey.TokenSecret,
                     "POST", oauth.GenerateTimeStamp(), oauth.GenerateNonce(), OAuth.OAuthBase.SignatureTypes.HMACSHA1,
-                    out normalizedUrl, out normalizedRequestParameters, out authorationRequestParameters );
+                    "", out normalizedUrl, out normalizedRequestParameters );
 
                 Console.WriteLine( normalizedUrl );
                 Console.WriteLine( normalizedRequestParameters );
-                Console.WriteLine( authorationRequestParameters );
 
                 //string requeset = string.Format( "{2}&oauth_signature={0}&oauth_verifier={1}", signature, OAuth.APIKey.PIN, normalizedRequestParameters );
                 string requeset = string.Format( "{2}", signature, OAuth.APIKey.PIN, normalizedRequestParameters );
@@ -41,7 +40,6 @@ namespace OAuthSample
                 HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( Diagrams );
                 webreq.Method = "POST";
                 webreq.ContentType = "application/x-www-form-urlencoded";
-                webreq.Headers.Add( "Authorization", "OAuth " + authorationRequestParameters );
 
 //                byte[] byteArray = Encoding.UTF8.GetBytes( requesetUrl );
 //                Stream dataStream = webreq.GetRequestStream();
