@@ -6,6 +6,9 @@ using System.Web;
 
 namespace OAuth
 {
+    /// <summary>
+    /// OAuthの認証
+    /// </summary>
     public class OAuthBase
     {
 
@@ -49,18 +52,6 @@ namespace OAuth
                 }
             }
         }
-
-        #region "パラメータジェネレータの作成（単体テスト用）"
-        interface ISignatureParameterGenerater
-        {
-            string GenerateNonce();
-            string GenerateTimeStamp();
-        }
-
-        class DefaultSignatureParameterGenerater
-        {
-        }
-        #endregion
 
         /// <summary>
         /// Comparer class used to perform the sorting of the query parameters
