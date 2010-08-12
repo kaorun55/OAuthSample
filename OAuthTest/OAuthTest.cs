@@ -22,6 +22,36 @@ namespace OAuthTest
         public const string ConsumerKey = "OKWyYVPvnpcBfbdmrJaNWx";
         public const string ConsumerSecret = "wObshonqbOqrnhIXGwflmlEVUFiiEJqScYLmKbPYTe";
 
+        class TestingOAuth : OAuthBase
+        {
+            string Timestamp = "";
+            string Nonce = "";
+
+            public TestingOAuth( string Timestamp, string Nonce )
+            {
+                this.Timestamp = Timestamp;
+                this.Nonce = Nonce;
+            }
+
+            /// <summary>
+            /// Generate the timestamp for the signature        
+            /// </summary>
+            /// <returns></returns>
+            public override string GenerateTimeStamp()
+            {
+                return Timestamp;
+            }
+
+            /// <summary>
+            /// Generate a nonce
+            /// </summary>
+            /// <returns></returns>
+            public override string GenerateNonce()
+            {
+                return Nonce;
+            }
+        }
+
         public OAuthTest()
         {
             //
@@ -70,17 +100,23 @@ namespace OAuthTest
         #endregion
 
         [TestMethod]
+        public void TimestampとNonceがオーバーライドされている()
+        {
+            OAuth.OAuthBase oauth = new TestingOAuth( "1281614602", "8715791" );
+
+            Assert.AreEqual( "1281614602", oauth.GenerateTimeStamp() );
+            Assert.AreEqual( "8715791", oauth.GenerateNonce() );
+        }
+
+        [TestMethod]
         public void PINを取得するためのトークンを取得するためのシグニチャ()
         {
-            OAuth.OAuthBase oauth = new OAuth.OAuthBase();
-
-            Uri uri = new Uri( ReqestToken );
-            string timestamp = "1281614602";
-            string nonce = "8715791";
+            OAuth.OAuthBase oauth = new TestingOAuth( "1281614602", "8715791" );
 
             OAuthConsumer consumer = new OAuthConsumer( ConsumerKey, ConsumerSecret );
-            string signature = oauth.GenerateSignature( uri, consumer, "GET",
-                    timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, "" );
+
+            Uri uri = new Uri( ReqestToken );
+            string signature = oauth.GenerateSignature( uri, consumer, "GET", "" );
 
             Assert.AreEqual( "FOBRl2mkgAx9tNdQeNIiIxjwhxo=", signature );
             Assert.AreEqual( "oauth_consumer_key=OKWyYVPvnpcBfbdmrJaNWx&oauth_nonce=8715791&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1281614602&oauth_version=1.0",
@@ -90,17 +126,15 @@ namespace OAuthTest
         [TestMethod]
         public void PINを取得後の認証のためのシグニチャ()
         {
-            OAuth.OAuthBase oauth = new OAuth.OAuthBase();
-
-            Uri uri = new Uri( AccessToken );
-            string timestamp = "1281614602";
-            string nonce = "8715791";
             string pin = "0011696";
+
+            OAuth.OAuthBase oauth = new TestingOAuth( "1281614602", "8715791" );
+
             OAuth.OAuthConsumer consumer = new OAuthConsumer( ConsumerKey, ConsumerSecret );
             consumer.SetTokenWithSecret( "021d4561687d6c5d328ad5b491624f30", "552ae19dc6f2b7736db9678bb4de2f00" );
 
-            string signature = oauth.GenerateSignature( uri, consumer, "POST",
-                    timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, pin );
+            Uri uri = new Uri( AccessToken );
+            string signature = oauth.GenerateSignature( uri, consumer, "POST", pin );
 
             Assert.AreEqual( "w9XSZS9loX/pyz6DtO2Q04QmDAw=", signature );
             Assert.AreEqual( "oauth_consumer_key=OKWyYVPvnpcBfbdmrJaNWx&oauth_nonce=8715791&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1281614602&oauth_token=021d4561687d6c5d328ad5b491624f30&oauth_verifier=0011696&oauth_version=1.0",
@@ -110,18 +144,15 @@ namespace OAuthTest
         [TestMethod]
         public void データ取得のためのシグニチャ()
         {
-            OAuth.OAuthBase oauth = new OAuth.OAuthBase();
-
             const string Diagrams = "http://cacoo.com/api/v1/diagrams.xml";
-            Uri uri = new Uri( Diagrams );
 
-            string timestamp = "1281615317";
-            string nonce = "2677625";
+            OAuth.OAuthBase oauth = new TestingOAuth( "1281615317", "2677625" );
 
             OAuthConsumer consumer = new OAuthConsumer( ConsumerKey, ConsumerSecret );
             consumer.SetTokenWithSecret( "f1b3a9fdb759dbd0c1818f7cdef307c0", "2e55a9ea2e9c286abfedadffecf15f74" );
-            string signature = oauth.GenerateSignature( uri, consumer,
-                "POST", timestamp, nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1, "" );
+
+            Uri uri = new Uri( Diagrams );
+            string signature = oauth.GenerateSignature( uri, consumer, "POST", "" );
 
             Assert.AreEqual( "YRhAaq8P+fN4DgkFhaF6x+EH1qA=", signature );
             Assert.AreEqual( "oauth_consumer_key=\"OKWyYVPvnpcBfbdmrJaNWx\", oauth_nonce=\"2677625\", oauth_signature_method=\"HMAC-SHA1\", oauth_timestamp=\"1281615317\", oauth_token=\"f1b3a9fdb759dbd0c1818f7cdef307c0\", oauth_version=\"1.0\", oauth_signature=\"YRhAaq8P%2BfN4DgkFhaF6x%2BEH1qA%3D\"",

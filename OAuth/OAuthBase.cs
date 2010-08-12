@@ -50,6 +50,18 @@ namespace OAuth
             }
         }
 
+        #region "パラメータジェネレータの作成（単体テスト用）"
+        interface ISignatureParameterGenerater
+        {
+            string GenerateNonce();
+            string GenerateTimeStamp();
+        }
+
+        class DefaultSignatureParameterGenerater
+        {
+        }
+        #endregion
+
         /// <summary>
         /// Comparer class used to perform the sorting of the query parameters
         /// </summary>
@@ -229,7 +241,7 @@ namespace OAuth
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <param name="signatureType">The signature type. To use the default values use <see cref="OAuthBase.SignatureTypes">OAuthBase.SignatureTypes</see>.</param>
         /// <returns>The signature base</returns>
-        public string GenerateSignatureBase( Uri url, OAuthConsumer consumer, string httpMethod, string timeStamp, string nonce, string signatureType, string pin )
+        public string GenerateSignatureBase( Uri url, OAuthConsumer consumer, string httpMethod, string signatureType, string pin )
         {
             if ( string.IsNullOrEmpty( consumer.ConsumerKey ) ) {
                 throw new ArgumentNullException( "consumerKey" );
@@ -243,7 +255,7 @@ namespace OAuth
                 throw new ArgumentNullException( "signatureType" );
             }
 
-            List<QueryParameter> parameters = GenerateParameters( url, consumer, timeStamp, nonce, signatureType, pin );
+            List<QueryParameter> parameters = GenerateParameters( url, consumer, signatureType, pin );
 
             NormalizedUrl = GenerateNormalizedUrl( url );
             NormalizedRequestParameters = GenerateNormalizeRequestParameters( parameters );
@@ -277,15 +289,15 @@ namespace OAuth
         /// <param name="signatureType"></param>
         /// <param name="pin"></param>
         /// <returns></returns>
-        private List<QueryParameter> GenerateParameters( Uri url, OAuthConsumer consumer, string timeStamp, string nonce, string signatureType, string pin )
+        private List<QueryParameter> GenerateParameters( Uri url, OAuthConsumer consumer, string signatureType, string pin )
         {
             List<QueryParameter> parameters = GetQueryParameters( url.Query );
 
             parameters.Add( new QueryParameter( OAuthConsumerKeyKey, consumer.ConsumerKey ) );
             parameters.Add( new QueryParameter( OAuthVersionKey, OAuthVersion ) );
             parameters.Add( new QueryParameter( OAuthSignatureMethodKey, signatureType ) );
-            parameters.Add( new QueryParameter( OAuthTimestampKey, timeStamp ) );
-            parameters.Add( new QueryParameter( OAuthNonceKey, nonce ) );
+            parameters.Add( new QueryParameter( OAuthTimestampKey, GenerateTimeStamp() ) );
+            parameters.Add( new QueryParameter( OAuthNonceKey, GenerateNonce() ) );
 
             if ( !string.IsNullOrEmpty( consumer.Token ) ) {
                 parameters.Add( new QueryParameter( OAuthTokenKey, consumer.Token ) );
@@ -352,9 +364,9 @@ namespace OAuth
         /// <param name="tokenSecret">The token secret, if available. If not available pass null or an empty string</param>
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <returns>A base64 string of the hash value</returns>
-        public string GenerateSignature( Uri url, OAuthConsumer consumer, string httpMethod, string timeStamp, string nonce, string pin  )
+        public string GenerateSignature( Uri url, OAuthConsumer consumer, string httpMethod, string pin  )
         {
-            return GenerateSignature( url, consumer, httpMethod, timeStamp, nonce, SignatureTypes.HMACSHA1, pin );
+            return GenerateSignature( url, consumer, httpMethod, SignatureTypes.HMACSHA1, pin );
         }
 
         /// <summary>
@@ -368,14 +380,13 @@ namespace OAuth
         /// <param name="httpMethod">The http method used. Must be a valid HTTP method verb (POST,GET,PUT, etc)</param>
         /// <param name="signatureType">The type of signature to use</param>
         /// <returns>A base64 string of the hash value</returns>
-        public string GenerateSignature( Uri url, OAuthConsumer consumer, string httpMethod, string timeStamp,
-            string nonce, SignatureTypes signatureType, string pin )
+        public string GenerateSignature( Uri url, OAuthConsumer consumer, string httpMethod, SignatureTypes signatureType, string pin )
         {
             switch ( signatureType ) {
             case SignatureTypes.PLAINTEXT:
                 return HttpUtility.UrlEncode( string.Format( "{0}&{1}", consumer.ConsumerSecret, consumer.TokenSecret ) );
             case SignatureTypes.HMACSHA1:
-                string signatureBase = GenerateSignatureBase( url, consumer, httpMethod, timeStamp, nonce, HMACSHA1SignatureType, pin );
+                string signatureBase = GenerateSignatureBase( url, consumer, httpMethod, HMACSHA1SignatureType, pin );
                 string signature = GenerateSignature( consumer, signatureBase );
 
                 // 認証パラメータ用にシグニチャにを付加する
@@ -432,6 +443,5 @@ namespace OAuth
             // Just a simple implementation of a random number between 123400 and 9999999
             return random.Next( 123400, 9999999 ).ToString();
         }
-
     }
 }

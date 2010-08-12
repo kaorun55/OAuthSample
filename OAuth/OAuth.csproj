@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISignatureParameterGenerater.cs" />
     <Compile Include="OAuthBase.cs" />
     <Compile Include="OAuthConsumer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

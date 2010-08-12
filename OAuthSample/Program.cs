@@ -22,15 +22,10 @@ namespace OAuthSample
 
                 Uri uri = new Uri( Diagrams );
 
-                string timestamp = oauth.GenerateTimeStamp();
-                string nonce = oauth.GenerateNonce();
-                Trace.WriteLine( "nonce = " + nonce );
-                Trace.WriteLine( "timestamp = " + timestamp );
-
                 OAuth.OAuthConsumer consumer = new OAuth.OAuthConsumer( OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret );
                 consumer.SetTokenWithSecret( OAuth.APIKey.Token, OAuth.APIKey.TokenSecret );
 
-                string signature = oauth.GenerateSignature( uri,consumer, "POST", timestamp, nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1, "" );
+                string signature = oauth.GenerateSignature( uri,consumer, "POST", "" );
                 Trace.WriteLine( "signature = " + signature );
                 Trace.WriteLine( "AuthorizationRequestParameters = " + oauth.AuthorizationRequestParameters );
 
