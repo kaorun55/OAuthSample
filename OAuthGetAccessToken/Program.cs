@@ -108,42 +108,41 @@ namespace TwitterOAuthGetAccessToken
             //oauth_token,oauth_token_secret取得
             HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( OAuth.APIKey.ReqestToken + string.Format( "?{0}&oauth_signature={1}", normalizedRequestParameters, signature ) );
             webreq.Method = "GET";
-            //HttpWebResponse webres = (HttpWebResponse)webreq.GetResponse();
-            HttpWebResponse webres = null;
+            HttpWebResponse webres = (HttpWebResponse)webreq.GetResponse();
 
             string result = "";
-            //using ( System.IO.Stream st = webres.GetResponseStream() )
-            //using ( System.IO.StreamReader sr = new System.IO.StreamReader( st, Encoding.GetEncoding( 932 ) ) ) {
-            //    result = sr.ReadToEnd();
-            //}
+            using ( System.IO.Stream st = webres.GetResponseStream() )
+            using ( System.IO.StreamReader sr = new System.IO.StreamReader( st, Encoding.GetEncoding( 932 ) ) ) {
+                result = sr.ReadToEnd();
+            }
 
-            //Console.WriteLine( result );
+            Console.WriteLine( result );
 
             //正規表現でoauth_token,oauth_token_secret取得
             Match match = Regex.Match( result, @"oauth_token=(.*?)&oauth_token_secret=(.*?)&oauth_callback.*" );
-            //string token = match.Groups[1].Value;
-            //string tokenSecret = match.Groups[2].Value;
+            string token = match.Groups[1].Value;
+            string tokenSecret = match.Groups[2].Value;
 
-            string token = "17fb65da01aa217b9d11ab55d07e6f9b";
-            string tokenSecret = "933fee29fd7a2215d5bc40568e42f426";
+            //string token = "17fb65da01aa217b9d11ab55d07e6f9b";
+            //string tokenSecret = "933fee29fd7a2215d5bc40568e42f426";
 
 
             //ブラウザからPIN確認
-            //string AuthorizeURL = OAuth.APIKey.Authorize + "?" + result;
-            //System.Diagnostics.Process.Start( AuthorizeURL );
-            //Console.Write( "PIN:" );
-            //string PIN = Console.ReadLine();
+            string AuthorizeURL = OAuth.APIKey.Authorize + "?" + result;
+            System.Diagnostics.Process.Start( AuthorizeURL );
+            Console.Write( "PIN:" );
+            string PIN = Console.ReadLine();
 
-            string PIN = "8836708";
-            string timeastamp = "1281594194";
-            nonce = "-4553643980892898909";
+            //string PIN = "8836708";
+            //string timeastamp = "1281594194";
+            //nonce = "-4553643980892898909";
 
             //oauth_token,oauth_token_secretを用いて再びsignature生成
-            //signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST", oAuth.GenerateTimeStamp(), oAuth.GenerateNonce(), OAuthBase.SignatureTypes.HMACSHA1, PIN, out normalizedUrl, out normalizedRequestParameters );
             uri = new Uri( OAuth.APIKey.AccessToken );
-            signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST",
-                timeastamp, nonce, OAuthBase.SignatureTypes.HMACSHA1,
-                PIN, out normalizedUrl, out normalizedRequestParameters );
+            signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST", oAuth.GenerateTimeStamp(), oAuth.GenerateNonce(), OAuthBase.SignatureTypes.HMACSHA1, PIN, out normalizedUrl, out normalizedRequestParameters );
+            //signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST",
+            //    timeastamp, nonce, OAuthBase.SignatureTypes.HMACSHA1,
+            //    PIN, out normalizedUrl, out normalizedRequestParameters );
 
             string request = OAuth.APIKey.AccessToken + string.Format( "?{3}&oauth_signature={0}", signature, result, PIN, normalizedRequestParameters );
             //string request = OAuth.APIKey.AccessToken + string.Format( "?oauth_verifier={0}", PIN );
