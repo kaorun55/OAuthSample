@@ -229,21 +229,19 @@ namespace OAuth
 
             List<QueryParameter> parameters = GetQueryParameters( url.Query );
 
-            if ( !string.IsNullOrEmpty( token ) ) {
-                parameters.Add( new QueryParameter( OAuthTokenKey, token ) );
-            }
-
             parameters.Add( new QueryParameter( OAuthConsumerKeyKey, consumerKey ) );
             parameters.Add( new QueryParameter( OAuthVersionKey, OAuthVersion ) );
             parameters.Add( new QueryParameter( OAuthSignatureMethodKey, signatureType ) );
             parameters.Add( new QueryParameter( OAuthTimestampKey, timeStamp ) );
             parameters.Add( new QueryParameter( OAuthNonceKey, nonce ) );
 
+            if ( !string.IsNullOrEmpty( token ) ) {
+                parameters.Add( new QueryParameter( OAuthTokenKey, token ) );
+            }
+
             if ( !string.IsNullOrEmpty( pin ) ) {
                 parameters.Add( new QueryParameter( OAuthVerifier, pin ) );
             }
-
-            AuthString = AuthorationRequestParameters( parameters );
 
             parameters.Sort( new QueryParameterComparer() );
 
@@ -253,6 +251,7 @@ namespace OAuth
             }
             normalizedUrl += url.AbsolutePath;
             normalizedRequestParameters = NormalizeRequestParameters( parameters );
+            AuthString = AuthorationRequestParameters( parameters );
 
             StringBuilder signatureBase = new StringBuilder();
             signatureBase.AppendFormat( "{0}&", httpMethod.ToUpper() );
