@@ -102,7 +102,8 @@ namespace TwitterOAuthGetAccessToken
 
             //OAuthBace.csを用いてsignature生成
             string normalizedUrl, normalizedRequestParameters, s;
-            string signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, "", "", "GET", timestamp, nonce, OAuthBase.SignatureTypes.HMACSHA1, "", out normalizedUrl, out normalizedRequestParameters );
+            string signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, "", "", "GET", timestamp, nonce,
+                OAuthBase.SignatureTypes.HMACSHA1, "", out normalizedUrl, out normalizedRequestParameters, out s );
 
 
             //oauth_token,oauth_token_secret取得
@@ -123,9 +124,6 @@ namespace TwitterOAuthGetAccessToken
             string token = match.Groups[1].Value;
             string tokenSecret = match.Groups[2].Value;
 
-            //string token = "17fb65da01aa217b9d11ab55d07e6f9b";
-            //string tokenSecret = "933fee29fd7a2215d5bc40568e42f426";
-
 
             //ブラウザからPIN確認
             string AuthorizeURL = OAuth.APIKey.Authorize + "?" + result;
@@ -133,19 +131,13 @@ namespace TwitterOAuthGetAccessToken
             Console.Write( "PIN:" );
             string PIN = Console.ReadLine();
 
-            //string PIN = "8836708";
-            //string timeastamp = "1281594194";
-            //nonce = "-4553643980892898909";
-
             //oauth_token,oauth_token_secretを用いて再びsignature生成
             uri = new Uri( OAuth.APIKey.AccessToken );
-            signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST", oAuth.GenerateTimeStamp(), oAuth.GenerateNonce(), OAuthBase.SignatureTypes.HMACSHA1, PIN, out normalizedUrl, out normalizedRequestParameters );
-            //signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST",
-            //    timeastamp, nonce, OAuthBase.SignatureTypes.HMACSHA1,
-            //    PIN, out normalizedUrl, out normalizedRequestParameters );
+            signature = oAuth.GenerateSignature( uri, consumer_key, consumer_secret, token, tokenSecret, "POST",
+                    oAuth.GenerateTimeStamp(), oAuth.GenerateNonce(), OAuthBase.SignatureTypes.HMACSHA1, PIN,
+                    out normalizedUrl, out normalizedRequestParameters, out s );
 
             string request = OAuth.APIKey.AccessToken + string.Format( "?{3}&oauth_signature={0}", signature, result, PIN, normalizedRequestParameters );
-            //string request = OAuth.APIKey.AccessToken + string.Format( "?oauth_verifier={0}", PIN );
             Console.WriteLine( normalizedRequestParameters );
             Console.WriteLine( signature );
             webreq = (System.Net.HttpWebRequest)WebRequest.Create( request );
@@ -163,12 +155,12 @@ namespace TwitterOAuthGetAccessToken
             Console.WriteLine( result );
 
             //正規表現でoauth_token,oauth_token_secret取得
-            match = Regex.Match( result, @"oauth_token=(.*?)&oauth_token_secret=(.*?)&.*" );
+            match = Regex.Match( result, @"oauth_token=(.*)&oauth_token_secret=(.*)" );
             token = match.Groups[1].Value;
             tokenSecret = match.Groups[2].Value;
 
-            Console.WriteLine( "public const string token = \"" + token + "\";" );
-            Console.WriteLine( "public const string tokenSecret = \"" + tokenSecret + "\";" );
+            Console.WriteLine( "public const string Token = \"" + token + "\";" );
+            Console.WriteLine( "public const string TokenSecret = \"" + tokenSecret + "\";" );
 
             //デスクトップ\oauth_token.txtに保存
             File.WriteAllText( Environment.GetFolderPath( Environment.SpecialFolder.Desktop ) + @"\cacoo_oauth_token.txt", result );

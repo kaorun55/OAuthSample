@@ -12,11 +12,7 @@ namespace OAuthSample
     class Program
     {
         // アクセストークン
-        const string AccessToken = "https://cacoo.com/oauth/access_token";
-        const string Authorize = "https://cacoo.com/oauth/authorize";
-        const string ReqestToken = "https://cacoo.com/oauth/request_token";
-
-        const string Diagrams = "http://cacoo.com/api/v1/users/kaorun55.xml";
+        const string Diagrams = "http://cacoo.com/api/v1/diagrams.xml";
 
         static void Main( string[] args )
         {
@@ -25,27 +21,24 @@ namespace OAuthSample
                 OAuth.OAuthBase oauth = new OAuth.OAuthBase();
 
                 Uri uri = new Uri( Diagrams );
-                string normalizedUrl, normalizedRequestParameters, authorationRequestParameters;
+                string normalizedUrl, normalizedRequestParameters, s;
+
+                string timestamp = oauth.GenerateTimeStamp();
+                string nonce = oauth.GenerateNonce();
+
+                //timestamp = "1281598828";
+                //nonce = "4642986830566840008";
+
                 string signature = oauth.GenerateSignature( uri, OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret,
                     OAuth.APIKey.Token, OAuth.APIKey.TokenSecret,
-                    "POST", oauth.GenerateTimeStamp(), oauth.GenerateNonce(), OAuth.OAuthBase.SignatureTypes.HMACSHA1,
-                    "", out normalizedUrl, out normalizedRequestParameters );
+                    "POST", timestamp, nonce, OAuth.OAuthBase.SignatureTypes.HMACSHA1,
+                    "", out normalizedUrl, out normalizedRequestParameters, out s );
 
-                Console.WriteLine( normalizedUrl );
-                Console.WriteLine( normalizedRequestParameters );
-
-                //string requeset = string.Format( "{2}&oauth_signature={0}&oauth_verifier={1}", signature, OAuth.APIKey.PIN, normalizedRequestParameters );
-                string requeset = string.Format( "{2}", signature, OAuth.APIKey.PIN, normalizedRequestParameters );
-                string requesetUrl = Diagrams + "?" + requeset;
                 HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( Diagrams );
                 webreq.Method = "POST";
-                webreq.ContentType = "application/x-www-form-urlencoded";
-
-//                byte[] byteArray = Encoding.UTF8.GetBytes( requesetUrl );
-//                Stream dataStream = webreq.GetRequestStream();
-//                dataStream.Write( byteArray, 0, byteArray.Length );
-//                dataStream.Close();
-    
+                webreq.Headers.Add( "Authorization", "OAuth " + s );
+                webreq.UserAgent = "Java/1.6.0_20";
+                webreq.Accept = "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2";
                 HttpWebResponse webres = (System.Net.HttpWebResponse)webreq.GetResponse();
 
                 string result;

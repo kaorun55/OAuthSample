@@ -4,16 +4,20 @@ README
 認証データについて
 -------
 OAuthSample\APIKey 以下に CacooApiKey.cs というファイルを下記の要領で作ってください
-    namespace OAuth
+namespace OAuth
+{
+    public class APIKey
     {
-        public class APIKey
-        {
-            // 公開しないようにする
-            public const string ConsumerKey = "************";
-            public const string ConsumerSecret = "************************************";
+        // アクセストークン
+        public const string AccessToken = "https://cacoo.com/oauth/access_token";
+        public const string Authorize = "https://cacoo.com/oauth/authorize";
+        public const string ReqestToken = "https://cacoo.com/oauth/request_token";
 
-            public const string Token = "************************************";
-            public const string TokenSecret = "************************************";
-            public const string PIN = "*******";
-        }
+        // 公開しないようにする
+        public const string ConsumerKey = "*********************";
+        public const string ConsumerSecret = "*********************";
+
+        public const string Token = "*********************";
+        public const string TokenSecret = "*********************";
     }
+}
