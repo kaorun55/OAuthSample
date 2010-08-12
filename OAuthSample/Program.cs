@@ -1,53 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
-using System.IO;
+using OAuth;
 
 namespace OAuthSample
 {
     class Program
     {
-        // アクセストークン
-        const string Diagrams = "http://cacoo.com/api/v1/diagrams.xml";
-
         static void Main( string[] args )
         {
             try {
                 System.Net.ServicePointManager.Expect100Continue = false;
-                OAuth.OAuthBase oauth = new OAuth.OAuthBase();
 
-                Uri uri = new Uri( Diagrams );
+                OAuthConsumer consumer = new OAuthConsumer( APIKey.ConsumerKey, APIKey.ConsumerSecret );
+                consumer.SetTokenWithSecret( APIKey.Token, APIKey.TokenSecret );
 
-                OAuth.OAuthConsumer consumer = new OAuth.OAuthConsumer( OAuth.APIKey.ConsumerKey, OAuth.APIKey.ConsumerSecret );
-                consumer.SetTokenWithSecret( OAuth.APIKey.Token, OAuth.APIKey.TokenSecret );
+                OAuthProvider provider = new OAuthProvider();
 
-                string signature = oauth.GenerateSignature( uri,consumer, "POST", "" );
-                Trace.WriteLine( "signature = " + signature );
-                Trace.WriteLine( "AuthorizationRequestParameters = " + oauth.AuthorizationRequestParameters );
+                string result = "";
 
-                HttpWebRequest webreq = (System.Net.HttpWebRequest)WebRequest.Create( Diagrams );
-                webreq.Method = "POST";
-                webreq.Headers.Add( "Authorization", "OAuth " + oauth.AuthorizationRequestParameters );
-                HttpWebResponse webres = (System.Net.HttpWebResponse)webreq.GetResponse();
-
-                string result;
-                using ( System.IO.Stream st = webres.GetResponseStream() )
-                using ( System.IO.StreamReader sr = new System.IO.StreamReader( st, Encoding.UTF8 ) ) {
-                    result = sr.ReadToEnd();
-                }
-
+                result = provider.RetrieveRequest( "https://cacoo.com/api/v1/account.xml", consumer );
+                Console.WriteLine( "--- アカウント情報取得 ---" );
                 Console.WriteLine( result );
+                Console.WriteLine( "" );
+
+                result = provider.RetrieveRequest( "https://cacoo.com/api/v1/users/kaorun55.xml", consumer );
+                Console.WriteLine( "--- ユーザー情報取得 ---" );
+                Console.WriteLine( result );
+                Console.WriteLine( "" );
+
+                result = provider.RetrieveRequest( "http://cacoo.com/api/v1/diagrams.xml", consumer );
+                Console.WriteLine( "--- 図の一覧取得 ---" );
+                Console.WriteLine( result );
+                Console.WriteLine( "" );
+
+                result = provider.RetrieveRequest( "http://cacoo.com/api/v1/diagrams/cTedXHIB8T1x1QJS.xml", consumer );
+                Console.WriteLine( "--- 図の情報取得 ---" );
+                Console.WriteLine( result );
+                Console.WriteLine( "" );
+
+                // バイナリの返し方を考える
+                //result = provider.RetrieveRequest( "http://cacoo.com/api/v1/diagrams/cTedXHIB8T1x1QJS.png", consumer );
+                //Console.WriteLine( "--- 画像取得 ---" );
+                //Console.WriteLine( result );
+                //Console.WriteLine( "" );
             }
             catch ( Exception ex ) {
                 Console.WriteLine( ex.Message );
             }
-
-            Console.Write( "Press enter : " );
-            Console.ReadLine();
+            finally {
+                Console.Write( "Press enter : " );
+                Console.ReadLine();
+            }
         }
     }
 }
